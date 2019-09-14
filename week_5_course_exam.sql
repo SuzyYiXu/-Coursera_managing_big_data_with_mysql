@@ -17,18 +17,18 @@ WHERE brand = 'Polo fas' AND (size = 'XXL' OR color = 'black');
 
 SELECT t.store, m.city, m.state 
 FROM 
-(SELECT EXTRACT(YEAR from saledate) AS yr, 
-EXTRACT(MONTH from saledate) AS mth,
-store,
-COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
-CASE WHEN yr = 2005 AND mth = 8
-THEN 'exclude'
-ELSE 'include'
-END AS exclude
-FROM trnsact
-WHERE stype = 'P' AND exclude = 'include'
-GROUP BY yr, mth, store
-HAVING num_day = 11) AS t
+   (SELECT EXTRACT(YEAR from saledate) AS yr, 
+   EXTRACT(MONTH from saledate) AS mth,
+   store,
+   COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
+   CASE WHEN yr = 2005 AND mth = 8
+   THEN 'exclude'
+   ELSE 'include'
+   END AS exclude
+   FROM trnsact
+   WHERE stype = 'P' AND exclude = 'include'
+   GROUP BY yr, mth, store
+   HAVING num_day = 11) AS t
 JOIN store_msa AS m
 ON t.store = m.store;
 
@@ -43,13 +43,13 @@ SUM(CASE WHEN T.mth = 11 THEN T.rev_per_mth END) AS rev_nov,
 SUM(CASE WHEN T.mth = 12 THEN T.rev_per_mth END) AS rev_dec,
 rev_dec - rev_nov AS inc
 FROM
-(SELECT sku, 
-EXTRACT(YEAR from saledate) AS yr, 
-EXTRACT(MONTH from saledate) AS mth, 
-SUM(amt) AS rev_per_mth
-FROM trnsact
-WHERE stype = 'P'
-GROUP BY yr, mth, sku) AS T
+   (SELECT sku, 
+   EXTRACT(YEAR from saledate) AS yr, 
+   EXTRACT(MONTH from saledate) AS mth, 
+   SUM(amt) AS rev_per_mth
+   FROM trnsact
+   WHERE stype = 'P'
+   GROUP BY yr, mth, sku) AS T
 GROUP BY sku
 ORDER BY inc DESC;
 --3949538
@@ -75,12 +75,12 @@ ORDER BY num_skus DESC;
 
 SELECT t.sku, t.sprice, t100.std, skuinfo.brand
 FROM 
-(SELECT TOP 1 sku, COUNT(DISTINCT trannum) AS num_trnsact, STDDEV_SAMP(sprice) AS std
-FROM trnsact 
-WHERE stype = 'P'
-GROUP BY sku
-HAVING num_trnsact > 100
-ORDER BY std DESC) AS t100
+   (SELECT TOP 1 sku, COUNT(DISTINCT trannum) AS num_trnsact, STDDEV_SAMP(sprice) AS std
+   FROM trnsact 
+   WHERE stype = 'P'
+   GROUP BY sku
+   HAVING num_trnsact > 100
+   ORDER BY std DESC) AS t100
 JOIN trnsact AS t
 ON t.sku = t100.sku
 JOIN skuinfo
@@ -93,29 +93,29 @@ ON skuinfo.sku = t.sku;
 
 SELECT m.store, m.city, m.state
 FROM 
-(SELECT TOP 1 T.store,
-SUM(CASE WHEN T.mth = 11 THEN T.num_day END) AS num_nov_day,
-SUM(CASE WHEN T.mth = 12 THEN T.num_day END) AS num_dec_day,
-SUM(CASE WHEN T.mth = 11 THEN T.rev_per_mth END) AS rev_nov,
-SUM(CASE WHEN T.mth = 12 THEN T.rev_per_mth END) AS rev_dec,
-rev_nov/num_nov_day AS rev_nov_per_day,
-rev_dec/num_dec_day AS rev_dec_per_day,
-rev_dec_per_day - rev_nov_per_day AS inc
-FROM
-(SELECT EXTRACT(YEAR from saledate) AS yr, 
-EXTRACT(MONTH from saledate) AS mth, 
-store,
-COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
-SUM(amt) AS rev_per_mth,
-CASE WHEN mth IN (11,12)
-THEN 'include'
-END AS include
-FROM trnsact
-WHERE stype = 'P' AND include = 'include'
-GROUP BY yr, mth, store
-HAVING num_day >= 20) AS T
-GROUP BY store
-ORDER BY inc DESC) AS T2
+   (SELECT TOP 1 T.store,
+   SUM(CASE WHEN T.mth = 11 THEN T.num_day END) AS num_nov_day,
+   SUM(CASE WHEN T.mth = 12 THEN T.num_day END) AS num_dec_day,
+   SUM(CASE WHEN T.mth = 11 THEN T.rev_per_mth END) AS rev_nov,
+   SUM(CASE WHEN T.mth = 12 THEN T.rev_per_mth END) AS rev_dec,
+   rev_nov/num_nov_day AS rev_nov_per_day,
+   rev_dec/num_dec_day AS rev_dec_per_day,
+   rev_dec_per_day - rev_nov_per_day AS inc
+   FROM
+      (SELECT EXTRACT(YEAR from saledate) AS yr, 
+      EXTRACT(MONTH from saledate) AS mth, 
+      store,
+      COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
+      SUM(amt) AS rev_per_mth,
+      CASE WHEN mth IN (11,12)
+      THEN 'include'
+      END AS include
+      FROM trnsact
+      WHERE stype = 'P' AND include = 'include'
+      GROUP BY yr, mth, store
+      HAVING num_day >= 20) AS T
+   GROUP BY store
+   ORDER BY inc DESC) AS T2
 JOIN store_msa AS m
 ON T2.store = m.store;
 --Metairie, LA
@@ -129,19 +129,19 @@ ON T2.store = m.store;
 SELECT T.store, m.msa_income, m.state, m.city, SUM(rev_per_mth)/SUM(num_day) AS rev_per_day
 FROM 
 --cleaned data
-(SELECT store,
-EXTRACT(YEAR from saledate) AS yr, 
-EXTRACT(MONTH from saledate) AS mth, 
-COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
-SUM(amt) AS rev_per_mth,
-CASE WHEN yr = 2005 AND mth = 8
-THEN 'exclude'
-ELSE 'include'
-END AS exclude
-FROM trnsact
-WHERE stype = 'P' AND exclude = 'include'
-GROUP BY store, yr, mth
-HAVING num_day >= 20) AS T
+   (SELECT store,
+   EXTRACT(YEAR from saledate) AS yr, 
+   EXTRACT(MONTH from saledate) AS mth, 
+   COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
+   SUM(amt) AS rev_per_mth,
+   CASE WHEN yr = 2005 AND mth = 8
+   THEN 'exclude'
+   ELSE 'include'
+   END AS exclude
+   FROM trnsact
+   WHERE stype = 'P' AND exclude = 'include'
+   GROUP BY store, yr, mth
+   HAVING num_day >= 20) AS T
 --end of cleaned data
 JOIN store_msa AS m
 ON m.store = T.store
@@ -172,19 +172,19 @@ FROM store_msa;
 SELECT T.store, m.msa_income, m.state, m.city, SUM(rev_per_mth)/SUM(num_day) AS rev_per_day
 FROM 
 --cleaned data
-(SELECT store,
-EXTRACT(YEAR from saledate) AS yr, 
-EXTRACT(MONTH from saledate) AS mth, 
-COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
-SUM(amt) AS rev_per_mth,
-CASE WHEN yr = 2005 AND mth = 8
-THEN 'exclude'
-ELSE 'include'
-END AS exclude
-FROM trnsact
-WHERE stype = 'P' AND exclude = 'include'
-GROUP BY store, yr, mth
-HAVING num_day >= 20) AS T
+   (SELECT store,
+   EXTRACT(YEAR from saledate) AS yr, 
+   EXTRACT(MONTH from saledate) AS mth, 
+   COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
+   SUM(amt) AS rev_per_mth,
+   CASE WHEN yr = 2005 AND mth = 8
+   THEN 'exclude'
+   ELSE 'include'
+   END AS exclude
+   FROM trnsact
+   WHERE stype = 'P' AND exclude = 'include'
+   GROUP BY store, yr, mth
+   HAVING num_day >= 20) AS T
 --end of cleaned data
 JOIN store_msa AS m
 ON m.store = T.store
@@ -204,27 +204,27 @@ SUM(total_rev)/SUM(total_day) AS avg_daily_rev
 --I think the answer is missing dividing avg_daily_rev by "COUNT(DISTINCT store)" because the number of stores in each group may be different
 FROM
 --calculate rev per day
-(SELECT T.store, m.msa_income, SUM(rev_per_mth) AS total_rev, SUM(num_day) AS total_day
-FROM 
---cleaned data
-(SELECT store,
-EXTRACT(YEAR from saledate) AS yr, 
-EXTRACT(MONTH from saledate) AS mth, 
-COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
-SUM(amt) AS rev_per_mth,
-CASE WHEN yr = 2005 AND mth = 8
-THEN 'exclude'
-ELSE 'include'
-END AS exclude
-FROM trnsact
-WHERE stype = 'P' AND exclude = 'include'
-GROUP BY store, yr, mth
-HAVING num_day >= 20) AS T
---end of cleaned data
-JOIN store_msa AS m
-ON m.store = T.store
-GROUP BY T.store, m.msa_income) AS T2
---end of calc rev_per_day
+   (SELECT T.store, m.msa_income, SUM(rev_per_mth) AS total_rev, SUM(num_day) AS total_day
+   FROM 
+   --cleaned data
+      (SELECT store,
+      EXTRACT(YEAR from saledate) AS yr, 
+      EXTRACT(MONTH from saledate) AS mth, 
+      COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
+      SUM(amt) AS rev_per_mth,
+      CASE WHEN yr = 2005 AND mth = 8
+      THEN 'exclude'
+      ELSE 'include'
+      END AS exclude
+      FROM trnsact
+      WHERE stype = 'P' AND exclude = 'include'
+      GROUP BY store, yr, mth
+      HAVING num_day >= 20) AS T
+      --end of cleaned data
+   JOIN store_msa AS m
+   ON m.store = T.store
+   GROUP BY T.store, m.msa_income) AS T2
+   --end of calc rev_per_day
 GROUP BY income_group
 ORDER BY avg_daily_rev;
 --low, 34159.76
@@ -247,27 +247,27 @@ SUM(total_rev)/SUM(total_day) AS avg_daily_rev
 --I think the answer is missing dividing avg_daily_rev by "COUNT(DISTINCT store)" because the number of stores in each group may be different
 FROM
 --calculate rev per day
-(SELECT T.store, m.msa_pop, SUM(rev_per_mth) AS total_rev, SUM(num_day) AS total_day
-FROM 
---cleaned data
-(SELECT store,
-EXTRACT(YEAR from saledate) AS yr, 
-EXTRACT(MONTH from saledate) AS mth, 
-COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
-SUM(amt) AS rev_per_mth,
-CASE WHEN yr = 2005 AND mth = 8
-THEN 'exclude'
-ELSE 'include'
-END AS exclude
-FROM trnsact
-WHERE stype = 'P' AND exclude = 'include'
-GROUP BY store, yr, mth
-HAVING num_day >= 20) AS T
---end of cleaned data
-JOIN store_msa AS m
-ON m.store = T.store
-GROUP BY T.store, m.msa_pop) AS T2
---end of calc rev_per_day
+   (SELECT T.store, m.msa_pop, SUM(rev_per_mth) AS total_rev, SUM(num_day) AS total_day
+   FROM 
+   --cleaned data
+      (SELECT store,
+      EXTRACT(YEAR from saledate) AS yr, 
+      EXTRACT(MONTH from saledate) AS mth, 
+      COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
+      SUM(amt) AS rev_per_mth,
+      CASE WHEN yr = 2005 AND mth = 8
+      THEN 'exclude'
+      ELSE 'include'
+      END AS exclude
+      FROM trnsact
+      WHERE stype = 'P' AND exclude = 'include'
+      GROUP BY store, yr, mth
+      HAVING num_day >= 20) AS T
+      --end of cleaned data
+   JOIN store_msa AS m
+   ON m.store = T.store
+   GROUP BY T.store, m.msa_pop) AS T2
+   --end of calc rev_per_day
 GROUP BY pop_group
 ORDER BY avg_daily_rev;
 -large 25451.53
@@ -358,22 +358,22 @@ ORDER BY decr_num_item DESC;
 
 SELECT T2.mth, COUNT(DISTINCT T2.store)
 FROM 
-(SELECT store, rev_per_mth/num_day AS rev_per_day, mth, ROW_NUMBER() OVER (PARTITION BY store ORDER BY rev_per_day ASC) AS mth_ROWNUM
-FROM
-(SELECT EXTRACT(YEAR from saledate) AS yr, 
-EXTRACT(MONTH from saledate) AS mth,
-store,
-COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
-SUM(amt) AS rev_per_mth,
-CASE WHEN yr = 2005 AND mth = 8
-THEN 'exclude'
-ELSE 'include'
-END AS exclude
-FROM trnsact
-WHERE stype = 'P' AND exclude = 'include'
-GROUP BY yr, mth, store
-HAVING num_day >= 20) AS T
-QUALIFY mth_ROWNUM = 1) AS T2
+   (SELECT store, rev_per_mth/num_day AS rev_per_day, mth, ROW_NUMBER() OVER (PARTITION BY store ORDER BY rev_per_day ASC)             AS mth_ROWNUM
+   FROM
+      (SELECT EXTRACT(YEAR from saledate) AS yr, 
+      EXTRACT(MONTH from saledate) AS mth,
+      store,
+      COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
+      SUM(amt) AS rev_per_mth,
+      CASE WHEN yr = 2005 AND mth = 8
+      THEN 'exclude'
+      ELSE 'include'
+      END AS exclude
+      FROM trnsact
+      WHERE stype = 'P' AND exclude = 'include'
+      GROUP BY yr, mth, store
+      HAVING num_day >= 20) AS T
+   QUALIFY mth_ROWNUM = 1) AS T2
 GROUP BY T2.mth;
 --aug, 121
 
@@ -385,21 +385,21 @@ GROUP BY T2.mth;
 
 SELECT T2.mth, COUNT(DISTINCT T2.store)
 FROM 
-(SELECT store, mth, ROW_NUMBER() OVER (PARTITION BY store ORDER BY num_sku DESC) AS mth_ROWNUM
-FROM
-(SELECT EXTRACT(YEAR from saledate) AS yr, 
-EXTRACT(MONTH from saledate) AS mth,
-store,
-COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
-COUNT(DISTINCT sku) AS num_sku,
-CASE WHEN yr = 2005 AND mth = 8
-THEN 'exclude'
-ELSE 'include'
-END AS exclude
-FROM trnsact
-WHERE stype = 'R' AND exclude = 'include'
-GROUP BY yr, mth, store
-HAVING num_day >= 20) AS T
-QUALIFY mth_ROWNUM = 1) AS T2
+   (SELECT store, mth, ROW_NUMBER() OVER (PARTITION BY store ORDER BY num_sku DESC) AS mth_ROWNUM
+   FROM
+      (SELECT EXTRACT(YEAR from saledate) AS yr, 
+      EXTRACT(MONTH from saledate) AS mth,
+      store,
+      COUNT(DISTINCT EXTRACT(DAY from saledate)) AS num_day,
+      COUNT(DISTINCT sku) AS num_sku,
+      CASE WHEN yr = 2005 AND mth = 8
+      THEN 'exclude'
+      ELSE 'include'
+      END AS exclude
+      FROM trnsact
+      WHERE stype = 'R' AND exclude = 'include'
+      GROUP BY yr, mth, store
+      HAVING num_day >= 20) AS T
+   QUALIFY mth_ROWNUM = 1) AS T2
 GROUP BY T2.mth;
 -- Dec, 293
